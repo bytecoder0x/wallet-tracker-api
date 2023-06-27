@@ -21,4 +21,13 @@ export class UsersService {
     const user = this.usersRepo.create(data);
     return this.usersRepo.save(user);
   }
+
+  async getMe(id: number) {
+    const user = await this.usersRepo.findOneBy({ id });
+    return {
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+    };
+  }
 }
