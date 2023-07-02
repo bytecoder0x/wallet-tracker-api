@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -20,10 +21,18 @@ export class WalletsService {
     if (!ethers.utils.isAddress(dto.address)) {
       throw new BadRequestException('invalid ethereum address');
     }
+    const address = dto.address.toLowerCase();
+
+    const existing = await this.walletsRepo.findOne({
+      where: { user: { id: userId }, address },
+    });
+    if (existing) {
+      throw new ConflictException('wallet already added');
+    }
 
     const wallet = this.walletsRepo.create({
       user: { id: userId } as any,
-      address: dto.address,
+      address,
       label: dto.label ?? null,
     });
     return this.walletsRepo.save(wallet);
