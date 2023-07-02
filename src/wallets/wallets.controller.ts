@@ -39,4 +39,13 @@ export class WalletsController {
     await this.walletsService.remove(user.id, id);
     return { removed: true };
   }
+
+  @Get(':id/verify-message')
+  async verifyMessage(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const wallet = await this.walletsService.findOwned(user.id, id);
+    return { message: this.walletsService.getVerifyMessage(wallet) };
+  }
 }

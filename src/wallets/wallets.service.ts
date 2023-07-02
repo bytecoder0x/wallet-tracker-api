@@ -10,8 +10,15 @@ import { ethers } from 'ethers';
 import { Wallet } from './wallet.entity';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 
+const VERIFY_TTL_MS = 10 * 60 * 1000;
+
 @Injectable()
 export class WalletsService {
+  private readonly pendingVerifications = new Map<
+    number,
+    { message: string; expiresAt: number }
+  >();
+
   constructor(
     @InjectRepository(Wallet)
     private readonly walletsRepo: Repository<Wallet>,
@@ -58,5 +65,15 @@ export class WalletsService {
   async remove(userId: number, walletId: number): Promise<void> {
     const wallet = await this.findOwned(userId, walletId);
     await this.walletsRepo.remove(wallet);
+  }
+
+  getVerifyMessage(wallet: Wallet): string {
+    const nonce = Math.random().toString(36).slice(2);
+    const message = `wallet-tracker: verify ${wallet.address} nonce ${nonce}`;
+    this.pendingVerifications.set(wallet.id, {
+      message,
+      expiresAt: Date.now() + VERIFY_TTL_MS,
+    });
+    return message;
   }
 }
