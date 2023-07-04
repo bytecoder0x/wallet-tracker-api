@@ -76,4 +76,25 @@ export class WalletsService {
     });
     return message;
   }
+
+  // adress is saved in lowercase, so compare in lowercase too
+  async verify(wallet: Wallet, signature: string): Promise<Wallet> {
+    const pending = this.pendingVerifications.get(wallet.id);
+    if (!pending || pending.expiresAt < Date.now()) {
+      throw new BadRequestException(
+        'verify message expired, request a new one',
+      );
+    }
+
+    const recovered = ethers.utils
+      .verifyMessage(pending.message, signature)
+      .toLowerCase();
+    if (recovered !== wallet.address) {
+      throw new BadRequestException('signature does not match wallet address');
+    }
+
+    this.pendingVerifications.delete(wallet.id);
+    wallet.verified = true;
+    return this.walletsRepo.save(wallet);
+  }
 }

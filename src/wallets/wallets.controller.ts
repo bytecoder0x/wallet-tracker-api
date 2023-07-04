@@ -15,6 +15,7 @@ import {
 } from '../common/decorators/current-user.decorator';
 import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
+import { VerifyWalletDto } from './dto/verify-wallet.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('wallets')
@@ -47,5 +48,16 @@ export class WalletsController {
   ) {
     const wallet = await this.walletsService.findOwned(user.id, id);
     return { message: this.walletsService.getVerifyMessage(wallet) };
+  }
+
+  @Post(':id/verify')
+  async verify(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: VerifyWalletDto,
+  ) {
+    const wallet = await this.walletsService.findOwned(user.id, id);
+    await this.walletsService.verify(wallet, dto.signature);
+    return { verified: true };
   }
 }
