@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   CurrentUser,
@@ -17,6 +18,8 @@ import { WalletsService } from './wallets.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { VerifyWalletDto } from './dto/verify-wallet.dto';
 
+@ApiTags('wallets')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('wallets')
 export class WalletsController {
