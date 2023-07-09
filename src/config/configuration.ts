@@ -9,4 +9,7 @@ export default () => ({
     password: process.env.DB_PASSWORD || 'postgres',
     name: process.env.DB_NAME || 'wallet_tracker',
   },
+  explorerKeys: {
+    ethereum: process.env.ETHERSCAN_API_KEY,
+  },
 });
