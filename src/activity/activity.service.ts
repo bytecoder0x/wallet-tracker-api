@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Activity } from './activity.entity';
 import { Wallet } from '../wallets/wallet.entity';
+import { ActivityQueryDto } from './dto/activity-query.dto';
 import { CreateActivityDto } from './dto/create-activity.dto';
 
 @Injectable()
@@ -11,6 +12,25 @@ export class ActivityService {
     @InjectRepository(Activity)
     private readonly activityRepo: Repository<Activity>,
   ) {}
+
+  async findByWallet(walletId: number, query: ActivityQueryDto) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+
+    const where: Record<string, unknown> = { wallet: { id: walletId } };
+    if (query.chain) {
+      where.chain = query.chain;
+    }
+
+    const [items, total] = await this.activityRepo.findAndCount({
+      where,
+      order: { timestamp: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { items, total, page, limit };
+  }
 
   async createManual(
     wallet: Wallet,
