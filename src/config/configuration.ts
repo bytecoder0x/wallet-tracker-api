@@ -11,5 +11,7 @@ export default () => ({
   },
   explorerKeys: {
     ethereum: process.env.ETHERSCAN_API_KEY,
+    arbitrum: process.env.ARBISCAN_API_KEY,
+    optimism: process.env.OPTIMISM_API_KEY,
   },
 });
