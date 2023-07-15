@@ -62,6 +62,10 @@ export class WalletsService {
     return wallet;
   }
 
+  findVerified(): Promise<Wallet[]> {
+    return this.walletsRepo.find({ where: { verified: true } });
+  }
+
   async remove(userId: number, walletId: number): Promise<void> {
     const wallet = await this.findOwned(userId, walletId);
     await this.walletsRepo.remove(wallet);
