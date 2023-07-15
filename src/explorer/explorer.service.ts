@@ -56,8 +56,10 @@ export class ExplorerService {
 
       const data = response.data;
       // console.log(data.result?.length);
+
+      // etherscan-like apis answer with status '0' for an empty wallet, not an error
       if (data.status === '0') {
-        throw new Error(data.message || 'explorer request failed');
+        break;
       }
 
       const txs: ExplorerTx[] = data.result ?? [];
