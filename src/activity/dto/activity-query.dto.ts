@@ -1,12 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
-import { EXPLORER_CHAINS } from '../../chains/chains';
+import { EXPLORER_CHAINS, MANUAL_CHAINS } from '../../chains/chains';
+
+const ALL_CHAINS = [...EXPLORER_CHAINS, ...MANUAL_CHAINS];
 
 export class ActivityQueryDto {
-  @ApiPropertyOptional({ enum: EXPLORER_CHAINS })
+  @ApiPropertyOptional({ enum: ALL_CHAINS })
   @IsOptional()
-  @IsIn(EXPLORER_CHAINS)
+  @IsIn(ALL_CHAINS)
   chain?: string;
 
   @ApiPropertyOptional({ default: 1 })
