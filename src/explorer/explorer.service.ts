@@ -17,6 +17,7 @@ export interface ExplorerTx {
 }
 
 const PAGE_SIZE = 1000;
+const MAX_PAGES = 10;
 
 @Injectable()
 export class ExplorerService {
@@ -36,26 +37,37 @@ export class ExplorerService {
       string
     >;
     const apiKey = explorerKeys?.[chain] ?? '';
+    const result: ExplorerTx[] = [];
 
-    const response = await axios.get(chainConfig.explorerApi, {
-      params: {
-        module: 'account',
-        action: 'txlist',
-        address,
-        startblock: 0,
-        endblock: 99999999,
-        page: 1,
-        offset: PAGE_SIZE,
-        sort: 'asc',
-        apikey: apiKey,
-      },
-    });
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const response = await axios.get(chainConfig.explorerApi, {
+        params: {
+          module: 'account',
+          action: 'txlist',
+          address,
+          startblock: 0,
+          endblock: 99999999,
+          page,
+          offset: PAGE_SIZE,
+          sort: 'asc',
+          apikey: apiKey,
+        },
+      });
 
-    const data = response.data;
-    if (data.status === '0') {
-      throw new Error(data.message || 'explorer request failed');
+      const data = response.data;
+      // console.log(data.result?.length);
+      if (data.status === '0') {
+        throw new Error(data.message || 'explorer request failed');
+      }
+
+      const txs: ExplorerTx[] = data.result ?? [];
+      result.push(...txs);
+
+      if (txs.length < PAGE_SIZE) {
+        break;
+      }
     }
 
-    return data.result ?? [];
+    return result;
   }
 }
