@@ -60,13 +60,14 @@ describe('Wallets (e2e)', () => {
       .expect(409);
   });
 
-  it('/wallets (GET) lists wallets', () => {
+  it('/wallets (GET) lists wallets with activityCount', () => {
     return request(app.getHttpServer())
       .get('/wallets')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
       .expect((res) => {
         expect(res.body.length).toBe(1);
+        expect(res.body[0].activityCount).toBe(0);
       });
   });
 
@@ -104,14 +105,56 @@ describe('Wallets (e2e)', () => {
       .set('Authorization', `Bearer ${token}`);
 
     const otherSigner = ethers.Wallet.createRandom();
-    const wrongSignature =
-      await otherSigner.signMessage('some other message');
+    const wrongSignature = await otherSigner.signMessage('some other message');
 
     return request(app.getHttpServer())
       .post(`/wallets/${walletId}/verify`)
       .set('Authorization', `Bearer ${token}`)
       .send({ signature: wrongSignature })
       .expect(400);
+  });
+
+  it('/activity (POST) adds a manual record and rejects a duplicate hash', async () => {
+    const list = await request(app.getHttpServer())
+      .get('/wallets')
+      .set('Authorization', `Bearer ${token}`);
+    const walletId = list.body[0].id;
+
+    const activity = {
+      walletId,
+      chain: 'starknet',
+      hash: `0x${'a'.repeat(64)}`,
+      timestamp: new Date().toISOString(),
+      note: 'manual test entry',
+    };
+
+    await request(app.getHttpServer())
+      .post('/activity')
+      .set('Authorization', `Bearer ${token}`)
+      .send(activity)
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post('/activity')
+      .set('Authorization', `Bearer ${token}`)
+      .send(activity)
+      .expect(409);
+  });
+
+  it('/wallets/:id/activity (GET) returns the manual record', async () => {
+    const list = await request(app.getHttpServer())
+      .get('/wallets')
+      .set('Authorization', `Bearer ${token}`);
+    const walletId = list.body[0].id;
+
+    return request(app.getHttpServer())
+      .get(`/wallets/${walletId}/activity`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.total).toBe(1);
+        expect(res.body.items[0].chain).toBe('starknet');
+      });
   });
 
   it('/wallets/:id (DELETE) is not allowed for a different user', async () => {

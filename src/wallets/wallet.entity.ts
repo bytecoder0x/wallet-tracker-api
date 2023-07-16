@@ -26,6 +26,9 @@ export class Wallet {
   @Column({ default: false })
   verified: boolean;
 
+  @Column({ type: 'timestamp', nullable: true })
+  lastSyncAt: Date | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

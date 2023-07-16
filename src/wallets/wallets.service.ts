@@ -8,20 +8,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ethers } from 'ethers';
 import { Wallet } from './wallet.entity';
+import { Activity } from '../activity/activity.entity';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 
 const VERIFY_TTL_MS = 10 * 60 * 1000;
 
 @Injectable()
 export class WalletsService {
+  // wallet id -> pending verify message, cleared on use or expiry
   private readonly pendingVerifications = new Map<
     number,
     { message: string; expiresAt: number }
   >();
 
   constructor(
-    @InjectRepository(Wallet)
-    private readonly walletsRepo: Repository<Wallet>,
+    @InjectRepository(Wallet) private readonly walletsRepo: Repository<Wallet>,
+    @InjectRepository(Activity)
+    private readonly activityRepo: Repository<Activity>,
   ) {}
 
   async create(userId: number, dto: CreateWalletDto): Promise<Wallet> {
@@ -45,11 +48,20 @@ export class WalletsService {
     return this.walletsRepo.save(wallet);
   }
 
-  findAllByUser(userId: number): Promise<Wallet[]> {
-    return this.walletsRepo.find({
+  async findAllByUser(userId: number) {
+    const wallets = await this.walletsRepo.find({
       where: { user: { id: userId } },
       order: { createdAt: 'DESC' },
     });
+
+    const result = [];
+    for (const wallet of wallets) {
+      const activityCount = await this.activityRepo.count({
+        where: { wallet: { id: wallet.id } },
+      });
+      result.push({ ...wallet, activityCount });
+    }
+    return result;
   }
 
   async findOwned(userId: number, walletId: number): Promise<Wallet> {
@@ -60,6 +72,10 @@ export class WalletsService {
       throw new NotFoundException('wallet not found');
     }
     return wallet;
+  }
+
+  findVerified(): Promise<Wallet[]> {
+    return this.walletsRepo.find({ where: { verified: true } });
   }
 
   async remove(userId: number, walletId: number): Promise<void> {
