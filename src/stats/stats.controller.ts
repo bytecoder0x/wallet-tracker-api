@@ -1,0 +1,38 @@
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import {
+  CurrentUser,
+  AuthUser,
+} from '../common/decorators/current-user.decorator';
+import { WalletsService } from '../wallets/wallets.service';
+import { ActivityService } from '../activity/activity.service';
+import { StatsService } from './stats.service';
+
+@ApiTags('stats')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('wallets')
+export class StatsController {
+  constructor(
+    private readonly walletsService: WalletsService,
+    private readonly activityService: ActivityService,
+    private readonly statsService: StatsService,
+  ) {}
+
+  @Get(':id/stats')
+  async stats(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const wallet = await this.walletsService.findOwned(user.id, id);
+    const activities = await this.activityService.findAllByWallet(wallet.id);
+    return this.statsService.buildStats(activities, wallet.address);
+  }
+}

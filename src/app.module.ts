@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { WalletsModule } from './wallets/wallets.module';
 import { ExplorerModule } from './explorer/explorer.module';
 import { ActivityModule } from './activity/activity.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ActivityModule } from './activity/activity.module';
     WalletsModule,
     ExplorerModule,
     ActivityModule,
+    StatsModule,
   ],
 })
 export class AppModule {}
