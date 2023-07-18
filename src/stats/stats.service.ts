@@ -8,6 +8,8 @@ export interface Stats {
   uniqueContracts: number;
   volumeEth: string;
   gasEth: string;
+  activeDays: number;
+  activeMonths: number;
   firstTx: Date | null;
   lastTx: Date | null;
 }
@@ -22,6 +24,8 @@ export class StatsService {
     let gas = ethers.BigNumber.from(0);
     // uniqe contracts the wallet interacted with
     const contracts = new Set<string>();
+    const days = new Set<string>();
+    const months = new Set<string>();
     let firstTx: Date | null = null;
     let lastTx: Date | null = null;
 
@@ -44,6 +48,10 @@ export class StatsService {
         contracts.add(activity.to.toLowerCase());
       }
 
+      const day = activity.timestamp.toISOString().slice(0, 10);
+      days.add(day);
+      months.add(day.slice(0, 7));
+
       if (!firstTx || activity.timestamp < firstTx)
         firstTx = activity.timestamp;
       if (!lastTx || activity.timestamp > lastTx) lastTx = activity.timestamp;
@@ -55,6 +63,8 @@ export class StatsService {
       uniqueContracts: contracts.size,
       volumeEth: ethers.utils.formatEther(volume),
       gasEth: ethers.utils.formatEther(gas),
+      activeDays: days.size,
+      activeMonths: months.size,
       firstTx,
       lastTx,
     };
