@@ -16,7 +16,23 @@ export interface Stats {
 
 @Injectable()
 export class StatsService {
-  buildStats(activities: Activity[], walletAddress: string): Stats {
+  buildStats(activities: Activity[], walletAddress: string) {
+    const byChain = new Map<string, Activity[]>();
+    for (const activity of activities) {
+      const list = byChain.get(activity.chain) || [];
+      list.push(activity);
+      byChain.set(activity.chain, list);
+    }
+
+    const chains: { [chain: string]: Stats } = {};
+    for (const [chain, list] of byChain) {
+      chains[chain] = this.computeStats(list, walletAddress);
+    }
+
+    return { total: this.computeStats(activities, walletAddress), chains };
+  }
+
+  private computeStats(activities: Activity[], walletAddress: string): Stats {
     const address = walletAddress.toLowerCase();
 
     let failedCount = 0;
