@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ethers } from 'ethers';
 import { Activity } from '../activity/activity.entity';
+import { protocolOf } from './protocols';
 
 export interface Stats {
   txCount: number;
@@ -12,6 +13,8 @@ export interface Stats {
   activeMonths: number;
   firstTx: Date | null;
   lastTx: Date | null;
+  protocols: { [name: string]: number };
+  bridges: number;
 }
 
 @Injectable()
@@ -42,12 +45,15 @@ export class StatsService {
     const contracts = new Set<string>();
     const days = new Set<string>();
     const months = new Set<string>();
+    const protocolCounts: { [name: string]: number } = {};
+    let bridges = 0;
     let firstTx: Date | null = null;
     let lastTx: Date | null = null;
 
     for (const activity of activities) {
       if (activity.isError) failedCount++;
 
+      // volume only counts value leaving the wallet
       if (activity.from.toLowerCase() === address) {
         volume = volume.add(ethers.BigNumber.from(activity.value || '0'));
       }
@@ -60,8 +66,16 @@ export class StatsService {
         );
       }
 
-      if (activity.to && activity.method) {
+      const protocol = protocolOf(activity.chain, activity.to);
+
+      if (activity.to && (activity.method || protocol)) {
         contracts.add(activity.to.toLowerCase());
+      }
+
+      if (protocol) {
+        protocolCounts[protocol.name] =
+          (protocolCounts[protocol.name] || 0) + 1;
+        if (protocol.type === 'bridge') bridges++;
       }
 
       const day = activity.timestamp.toISOString().slice(0, 10);
@@ -83,6 +97,8 @@ export class StatsService {
       activeMonths: months.size,
       firstTx,
       lastTx,
+      protocols: protocolCounts,
+      bridges,
     };
   }
 }
