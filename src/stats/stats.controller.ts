@@ -14,6 +14,7 @@ import {
 import { WalletsService } from '../wallets/wallets.service';
 import { ActivityService } from '../activity/activity.service';
 import { StatsService } from './stats.service';
+import { BalancesService } from './balances.service';
 
 @ApiTags('stats')
 @ApiBearerAuth()
@@ -24,6 +25,7 @@ export class StatsController {
     private readonly walletsService: WalletsService,
     private readonly activityService: ActivityService,
     private readonly statsService: StatsService,
+    private readonly balancesService: BalancesService,
   ) {}
 
   @Get(':id/stats')
@@ -34,5 +36,14 @@ export class StatsController {
     const wallet = await this.walletsService.findOwned(user.id, id);
     const activities = await this.activityService.findAllByWallet(wallet.id);
     return this.statsService.buildStats(activities, wallet.address);
+  }
+
+  @Get(':id/balances')
+  async balances(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    const wallet = await this.walletsService.findOwned(user.id, id);
+    return this.balancesService.getBalances(wallet.address);
   }
 }
