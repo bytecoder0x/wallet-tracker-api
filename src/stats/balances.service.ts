@@ -12,6 +12,7 @@ export class BalancesService {
     const balances: {
       [chain: string]: { eth: string; usdc: string } | null;
     } = {};
+    let ens: string | null = null;
 
     for (const chain of BALANCE_CHAINS) {
       const config = chains[chain];
@@ -31,8 +32,12 @@ export class BalancesService {
       }
 
       balances[chain] = { eth: ethers.utils.formatEther(ethBalance), usdc };
+
+      if (chain === 'ethereum') {
+        ens = await provider.lookupAddress(address).catch(() => null);
+      }
     }
 
-    return { balances };
+    return { ens, balances };
   }
 }
