@@ -32,6 +32,11 @@ export class ActivityService {
     return { items, total, page, limit };
   }
 
+  // used by stats/scoring, no pagination
+  findAllByWallet(walletId: number): Promise<Activity[]> {
+    return this.activityRepo.find({ where: { wallet: { id: walletId } } });
+  }
+
   async createManual(
     wallet: Wallet,
     dto: CreateActivityDto,

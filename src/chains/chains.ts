@@ -19,8 +19,8 @@ export const chains: Record<string, ChainConfig> = {
     explorerApi: 'https://api.etherscan.io/api',
     keyName: 'ETHERSCAN_API_KEY',
     rpc: 'https://cloudflare-eth.com',
-    usdc: null,
-    usdcDecimals: 0,
+    usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    usdcDecimals: 6,
   },
   arbitrum: {
     name: 'Arbitrum',
@@ -28,8 +28,8 @@ export const chains: Record<string, ChainConfig> = {
     explorerApi: 'https://api.arbiscan.io/api',
     keyName: 'ARBISCAN_API_KEY',
     rpc: 'https://arb1.arbitrum.io/rpc',
-    usdc: null,
-    usdcDecimals: 0,
+    usdc: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+    usdcDecimals: 6,
   },
   optimism: {
     name: 'Optimism',
@@ -37,8 +37,8 @@ export const chains: Record<string, ChainConfig> = {
     explorerApi: 'https://api-optimistic.etherscan.io/api',
     keyName: 'OPTIMISM_API_KEY',
     rpc: 'https://mainnet.optimism.io',
-    usdc: null,
-    usdcDecimals: 0,
+    usdc: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
+    usdcDecimals: 6,
   },
   zksync: {
     name: 'zkSync Era',
