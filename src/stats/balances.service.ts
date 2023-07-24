@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ethers } from 'ethers';
 import { chains } from '../chains/chains';
 
@@ -8,6 +8,8 @@ const BALANCE_CHAINS = ['ethereum', 'arbitrum', 'optimism', 'zksync'];
 
 @Injectable()
 export class BalancesService {
+  private readonly logger = new Logger(BalancesService.name);
+
   async getBalances(address: string) {
     const balances: {
       [chain: string]: { eth: string; usdc: string } | null;
@@ -21,20 +23,26 @@ export class BalancesService {
         continue;
       }
 
-      const provider = new ethers.providers.JsonRpcProvider(config.rpc);
-      const ethBalance = await provider.getBalance(address);
-      let usdc = '0';
+      try {
+        const provider = new ethers.providers.JsonRpcProvider(config.rpc);
+        const ethBalance = await provider.getBalance(address);
+        let usdc = '0';
 
-      if (config.usdc) {
-        const token = new ethers.Contract(config.usdc, ERC20_ABI, provider);
-        const raw = await token.balanceOf(address);
-        usdc = ethers.utils.formatUnits(raw, config.usdcDecimals);
-      }
+        if (config.usdc) {
+          const token = new ethers.Contract(config.usdc, ERC20_ABI, provider);
+          const raw = await token.balanceOf(address);
+          usdc = ethers.utils.formatUnits(raw, config.usdcDecimals);
+        }
 
-      balances[chain] = { eth: ethers.utils.formatEther(ethBalance), usdc };
+        balances[chain] = { eth: ethers.utils.formatEther(ethBalance), usdc };
 
-      if (chain === 'ethereum') {
-        ens = await provider.lookupAddress(address).catch(() => null);
+        if (chain === 'ethereum') {
+          ens = await provider.lookupAddress(address).catch(() => null);
+        }
+      } catch (err) {
+        // public rpc can be flaky/rate-limited, one network failing should not break the rest
+        this.logger.warn(`balances: ${chain} rpc failed - ${err.message}`);
+        balances[chain] = null;
       }
     }
 
