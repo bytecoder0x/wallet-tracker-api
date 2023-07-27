@@ -1,4 +1,12 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Wallet } from '../wallets/wallet.entity';
+import { Activity } from '../activity/activity.entity';
+import { ScoringService } from './scoring.service';
 
-@Module({})
+@Module({
+  imports: [TypeOrmModule.forFeature([Wallet, Activity])],
+  providers: [ScoringService],
+  exports: [ScoringService],
+})
 export class ScoringModule {}
