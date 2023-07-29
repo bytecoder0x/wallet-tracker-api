@@ -44,7 +44,7 @@ export class ScoringService {
 
       result.push({
         user: userId,
-        address: entry.address,
+        address: maskAddress(entry.address),
         wallets: entry.wallets.length,
         score: total,
       });
@@ -101,4 +101,9 @@ export class ScoringService {
 
     return { total, breakdown };
   }
+}
+
+function maskAddress(address: string | null): string | null {
+  if (!address) return null;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
