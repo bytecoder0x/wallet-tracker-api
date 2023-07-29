@@ -19,6 +19,41 @@ export class ScoringService {
     return this.calculate(wallet, activities);
   }
 
+  async leaderboard(limit: number) {
+    const wallets = await this.walletsRepo.find({ relations: ['user'] });
+
+    const byUser = new Map<number, { address: string; wallets: Wallet[] }>();
+    for (const wallet of wallets) {
+      const entry = byUser.get(wallet.user.id) || {
+        address: wallet.address,
+        wallets: [],
+      };
+      entry.wallets.push(wallet);
+      byUser.set(wallet.user.id, entry);
+    }
+
+    const result = [];
+    for (const [userId, entry] of byUser) {
+      let total = 0;
+      for (const wallet of entry.wallets) {
+        const activities = await this.activityRepo.find({
+          where: { wallet: { id: wallet.id } },
+        });
+        total += this.calculate(wallet, activities).total;
+      }
+
+      result.push({
+        user: userId,
+        address: entry.address,
+        wallets: entry.wallets.length,
+        score: total,
+      });
+    }
+
+    result.sort((a, b) => b.score - a.score);
+    return result.slice(0, limit);
+  }
+
   private calculate(wallet: Wallet, activities: Activity[]) {
     const address = wallet.address.toLowerCase();
     const months = new Set<string>();
