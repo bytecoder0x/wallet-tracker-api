@@ -89,12 +89,13 @@ export class ScoringService {
       volume: Math.floor(volumeEth / 0.1),
       bridge_tx: bridgeTx,
       known_protocol: protocolTx,
+      verified_wallet: wallet.verified ? 1 : 0,
     };
 
     const breakdown = rules.map((rule) => ({
       rule: rule.id,
-      value: values[rule.id] ?? 0,
-      points: Math.min((values[rule.id] ?? 0) * rule.points, rule.max),
+      value: values[rule.id],
+      points: Math.min(values[rule.id] * rule.points, rule.max),
     }));
 
     const total = breakdown.reduce((sum, item) => sum + item.points, 0);

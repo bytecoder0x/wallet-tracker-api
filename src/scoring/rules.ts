@@ -42,4 +42,10 @@ export const rules: ScoringRule[] = [
     points: 15,
     max: 90,
   },
+  {
+    id: 'verified_wallet',
+    description: '25 points for a verified wallet',
+    points: 25,
+    max: 25,
+  },
 ];
