@@ -9,6 +9,7 @@ import { WalletsModule } from './wallets/wallets.module';
 import { ExplorerModule } from './explorer/explorer.module';
 import { ActivityModule } from './activity/activity.module';
 import { StatsModule } from './stats/stats.module';
+import { ScoringModule } from './scoring/scoring.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { StatsModule } from './stats/stats.module';
     ExplorerModule,
     ActivityModule,
     StatsModule,
+    ScoringModule,
   ],
 })
 export class AppModule {}
