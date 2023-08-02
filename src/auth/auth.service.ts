@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { generateNonce } from 'siwe';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -12,6 +13,9 @@ import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
+  // nonce -> expires at
+  private nonces = new Map<string, number>();
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -41,6 +45,12 @@ export class AuthService {
     }
 
     return this.buildToken(user);
+  }
+
+  getNonce() {
+    const nonce = generateNonce();
+    this.nonces.set(nonce, Date.now() + 10 * 60 * 1000);
+    return { nonce };
   }
 
   private buildToken(user: User) {
