@@ -1,0 +1,139 @@
+@baseUrl = http://localhost:3000
+@token = paste_access_token_here
+@walletId = 1
+
+### register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "test1234"
+}
+
+### login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "test1234"
+}
+
+### siwe nonce
+GET {{baseUrl}}/auth/nonce
+
+### siwe login (fill message/signature from a wallet)
+POST {{baseUrl}}/auth/siwe
+Content-Type: application/json
+
+{
+  "message": "",
+  "signature": ""
+}
+
+### current user
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### add wallet
+POST {{baseUrl}}/wallets
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "address": "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+  "label": "main"
+}
+
+### list wallets
+GET {{baseUrl}}/wallets
+Authorization: Bearer {{token}}
+
+### wallet verify message
+GET {{baseUrl}}/wallets/{{walletId}}/verify-message
+Authorization: Bearer {{token}}
+
+### wallet verify signature
+POST {{baseUrl}}/wallets/{{walletId}}/verify
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "signature": ""
+}
+
+### sync wallet from explorers
+POST {{baseUrl}}/wallets/{{walletId}}/sync
+Authorization: Bearer {{token}}
+
+### wallet activity, paginated
+GET {{baseUrl}}/wallets/{{walletId}}/activity?page=1&limit=20
+Authorization: Bearer {{token}}
+
+### add manual activity, ethereum, uniswap v3 router
+POST {{baseUrl}}/activity
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "walletId": 1,
+  "chain": "ethereum",
+  "hash": "0x1111111111111111111111111111111111111111111111111111111111aa",
+  "timestamp": "2023-07-01T12:00:00.000Z",
+  "value": "50000000000000000",
+  "to": "0xe592427a0aece92de3edee1f18e0157c05861564",
+  "note": "manual uniswap swap"
+}
+
+### add manual activity, arbitrum, stargate bridge
+POST {{baseUrl}}/activity
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "walletId": 1,
+  "chain": "arbitrum",
+  "hash": "0x2222222222222222222222222222222222222222222222222222222222bb",
+  "timestamp": "2023-07-05T18:30:00.000Z",
+  "value": "10000000000000000",
+  "to": "0x53bf833a5d6c4dda888f69c22c88c9f356a41614",
+  "note": "manual stargate bridge"
+}
+
+### add manual activity, zksync, syncswap
+POST {{baseUrl}}/activity
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "walletId": 1,
+  "chain": "zksync",
+  "hash": "0x3333333333333333333333333333333333333333333333333333333333cc",
+  "timestamp": "2023-07-10T09:15:00.000Z",
+  "value": "0",
+  "to": "0x2da10a1e27bf85cedd8ffb1abbe97e53391c0295",
+  "note": "manual syncswap tx"
+}
+
+### wallet stats
+GET {{baseUrl}}/wallets/{{walletId}}/stats
+Authorization: Bearer {{token}}
+
+### wallet balances
+GET {{baseUrl}}/wallets/{{walletId}}/balances
+Authorization: Bearer {{token}}
+
+### wallet score
+GET {{baseUrl}}/wallets/{{walletId}}/score
+Authorization: Bearer {{token}}
+
+### scoring rules
+GET {{baseUrl}}/scoring/rules
+
+### leaderboard
+GET {{baseUrl}}/leaderboard?limit=20
+
+### delete wallet
+DELETE {{baseUrl}}/wallets/{{walletId}}
+Authorization: Bearer {{token}}
