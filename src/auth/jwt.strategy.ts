@@ -5,7 +5,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UsersService } from '../users/users.service';
 import { AuthUser } from '../common/decorators/current-user.decorator';
 
-type JwtPayload = { sub: number; email: string };
+type JwtPayload = { sub: number; email: string | null; address: string | null };
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -26,6 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
-    return { id: user.id, email: user.email };
+    return { id: user.id, email: user.email, address: user.address };
   }
 }

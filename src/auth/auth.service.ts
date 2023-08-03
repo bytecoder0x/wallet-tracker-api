@@ -35,7 +35,7 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.usersService.findByEmail(dto.email);
-    if (!user) {
+    if (!user || !user.password) {
       throw new UnauthorizedException('invalid credentials');
     }
 
@@ -54,7 +54,7 @@ export class AuthService {
   }
 
   private buildToken(user: User) {
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, address: user.address };
     return { accessToken: this.jwtService.sign(payload) };
   }
 }
