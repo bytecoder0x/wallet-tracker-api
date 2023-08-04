@@ -68,6 +68,7 @@ export class AuthService {
       signature: dto.signature,
       nonce,
     });
+    this.nonces.delete(nonce);
     if (!result.success) {
       throw new UnauthorizedException('signature verification failed');
     }
