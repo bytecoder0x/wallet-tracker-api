@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { generateNonce } from 'siwe';
+import { generateNonce, SiweMessage } from 'siwe';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { SiweDto } from './dto/siwe.dto';
 import { User } from '../users/user.entity';
 
 @Injectable()
@@ -51,6 +52,33 @@ export class AuthService {
     const nonce = generateNonce();
     this.nonces.set(nonce, Date.now() + 10 * 60 * 1000);
     return { nonce };
+  }
+
+  async verifySiwe(dto: SiweDto) {
+    const siweMessage = new SiweMessage(dto.message);
+    const nonce = siweMessage.nonce;
+
+    const expiresAt = this.nonces.get(nonce);
+    if (!expiresAt || expiresAt < Date.now()) {
+      this.nonces.delete(nonce);
+      throw new UnauthorizedException('nonce expired or unknown');
+    }
+
+    const result = await siweMessage.verify({
+      signature: dto.signature,
+      nonce,
+    });
+    if (!result.success) {
+      throw new UnauthorizedException('signature verification failed');
+    }
+
+    const address = result.data.address.toLowerCase();
+    let user = await this.usersService.findByAddress(address);
+    if (!user) {
+      user = await this.usersService.create({ address });
+    }
+
+    return this.buildToken(user);
   }
 
   private buildToken(user: User) {
