@@ -19,6 +19,10 @@ export class UsersService {
     return this.usersRepo.findOneBy({ email });
   }
 
+  findByAddress(address: string): Promise<User | null> {
+    return this.usersRepo.findOneBy({ address });
+  }
+
   create(data: Partial<User>): Promise<User> {
     const user = this.usersRepo.create(data);
     return this.usersRepo.save(user);
@@ -31,6 +35,7 @@ export class UsersService {
     return {
       id: user.id,
       email: user.email,
+      address: user.address,
       createdAt: user.createdAt,
       wallets,
     };

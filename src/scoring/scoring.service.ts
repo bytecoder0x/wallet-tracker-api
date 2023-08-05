@@ -22,10 +22,13 @@ export class ScoringService {
   async leaderboard(limit: number) {
     const wallets = await this.walletsRepo.find({ relations: ['user'] });
 
-    const byUser = new Map<number, { address: string; wallets: Wallet[] }>();
+    const byUser = new Map<
+      number,
+      { address: string | null; wallets: Wallet[] }
+    >();
     for (const wallet of wallets) {
       const entry = byUser.get(wallet.user.id) || {
-        address: wallet.address,
+        address: wallet.user.address,
         wallets: [],
       };
       entry.wallets.push(wallet);
