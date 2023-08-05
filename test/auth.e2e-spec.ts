@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
+import { ethers } from 'ethers';
+import { SiweMessage } from 'siwe';
 import { AppModule } from '../src/app.module';
 
 describe('Auth (e2e)', () => {
@@ -58,6 +60,40 @@ describe('Auth (e2e)', () => {
       .expect(401);
   });
 
+  it('/auth/nonce (GET) returns a nonce', () => {
+    return request(app.getHttpServer())
+      .get('/auth/nonce')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.nonce).toBeDefined();
+      });
+  });
+
+  it('/auth/siwe (POST) returns a token for a valid signature', async () => {
+    const nonceRes = await request(app.getHttpServer()).get('/auth/nonce');
+    const wallet = ethers.Wallet.createRandom();
+
+    const siweMessage = new SiweMessage({
+      domain: 'localhost',
+      address: wallet.address,
+      statement: 'Sign in to wallet-tracker',
+      uri: 'http://localhost:3000',
+      version: '1',
+      chainId: 1,
+      nonce: nonceRes.body.nonce,
+    });
+    const message = siweMessage.prepareMessage();
+    const signature = await wallet.signMessage(message);
+
+    return request(app.getHttpServer())
+      .post('/auth/siwe')
+      .send({ message, signature })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body.accessToken).toBeDefined();
+      });
+  });
+
   it('/users/me (GET) requires auth', () => {
     return request(app.getHttpServer()).get('/users/me').expect(401);
   });
@@ -73,6 +109,7 @@ describe('Auth (e2e)', () => {
       .expect(200)
       .expect((res) => {
         expect(res.body.email).toBe(email);
+        expect(res.body.wallets).toBeDefined();
       });
   });
 });
