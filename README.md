@@ -19,3 +19,30 @@ npm run start:dev
 No docker - point `DB_HOST`/`DB_PORT` in `.env` at your own Postgres 15 instead.
 
 Swagger UI: `http://localhost:3000/docs`.
+
+## Endpoints
+
+```
+POST   /auth/register
+POST   /auth/login
+GET    /auth/nonce
+POST   /auth/siwe
+
+GET    /users/me
+
+POST   /wallets
+GET    /wallets
+DELETE /wallets/:id
+GET    /wallets/:id/verify-message
+POST   /wallets/:id/verify
+GET    /wallets/:id/activity
+POST   /wallets/:id/sync
+POST   /activity
+
+GET    /wallets/:id/balances
+GET    /wallets/:id/stats
+GET    /wallets/:id/score
+
+GET    /scoring/rules
+GET    /leaderboard
+```
