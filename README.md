@@ -20,6 +20,9 @@ No docker - point `DB_HOST`/`DB_PORT` in `.env` at your own Postgres 15 instead.
 
 Swagger UI: `http://localhost:3000/docs`.
 
+Explorer keys are optional, without them `/wallets/:id/sync` just returns 0 for every chain.
+zkSync and Starknet have no tx sync, add activity for them with `POST /activity`.
+
 ## Endpoints
 
 ```
@@ -46,3 +49,29 @@ GET    /wallets/:id/score
 GET    /scoring/rules
 GET    /leaderboard
 ```
+
+## Example
+
+```
+curl http://localhost:3000/wallets/1/stats -H "Authorization: Bearer <token>"
+```
+
+```json
+{
+  "total": {
+    "txCount": 3,
+    "failedCount": 0,
+    "uniqueContracts": 3,
+    "volumeEth": "0.06",
+    "gasEth": "0.0",
+    "activeDays": 3,
+    "activeMonths": 1,
+    "firstTx": "2023-07-01T12:00:00.000Z",
+    "lastTx": "2023-07-10T09:15:00.000Z",
+    "protocols": { "Uniswap V3": 1, "Stargate": 1, "SyncSwap": 1 },
+    "bridges": 1
+  }
+}
+```
+
+`chains` in the real response has the same breakdown split per network, cut here to keep it short.
